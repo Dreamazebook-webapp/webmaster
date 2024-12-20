@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  <script>
+	function dianbook(pid,pname){
+		myform.pid.value=pid;
+		myform.parentname.value=pname;
+	}
+	function onsub(){
+		if(myform.bookname.value==''){
+			alert('请填写书名');
+			myform.bookname.focus();
+			return false;
+		}
+		return true;
+	}
+  </script>
+ </head>
+ <body>
+  <table border="1" align="center" width="90%">
+  <tr>
+	<td colspan="2" align="center">后台管理</td>
+  </tr>
+  <tr>
+	<td width="20%" align="right">
+		{% include "manage/left_tree.html" %}
+	</td>
+	<td>
+	<!-- 中间 -->
+		<!--<a href="#">创建绘本</a>-->
+		<br/>
+		<form name="myform" action="../addbook/" method="post" onsubmit="return onsub()" enctype="multipart/form-data">
+			<table border="1" align="center">
+				<tr>
+					<td align="right">父绘本名称:</td>
+					<td>
+						<input type="text" name="parentname" readonly>
+						<input type="hidden" name="pid" value="0">
+					</td>
+				</tr>
+				<tr>
+					<td align="right">绘本名称:</td>
+					<td><input type="text" name="bookname">@@为替换符</td>
+				</tr>
+				<tr>
+					<td align="right">语种:</td>
+					<td>
+						<input type="radio" name="language" value="en" checked>英语&nbsp;
+						<input type="radio" name="language" value="1">法语&nbsp;
+						<input type="radio" name="language" value="2">印地语
+					</td>
+				</tr>
+				<tr>
+					<td align="right">性别:</td>
+					<td>
+						<input type="radio" name="gender" value="0">男&nbsp;
+						<input type="radio" name="gender" value="1" checked>女
+					</td>
+				</tr>
+				<tr>
+					<td align="right">肤色:</td>
+					<td>
+						<input type="radio" name="skincolor" value="0" checked>白&nbsp;
+						<input type="radio" name="skincolor" value="1">黄&nbsp;
+						<input type="radio" name="skincolor" value="2">棕&nbsp;
+						<input type="radio" name="skincolor" value="3">黑
+					</td>
+				</tr>
+				<tr>
+					<td align="right">绘本展示图片:</td>
+					<td>
+						<input type="file" name="showpic">
+					</td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2">
+						{% csrf_token %}
+						<input type="reset" value="重置">&nbsp;&nbsp;
+						<input type="submit" value="创建新绘本">
+					</td>
+				</tr>
+			</table>
+		</form>
+		<br/>
+		<table align="center" border="1" width="80%">
+			<tr>
+				<td>id</td><td>绘本名</td><td>子绘本(性别,肤色,语种)</td>
+			</tr>
+			{% for item in booklist %}
+			<tr>
+				<td>
+					{{ item.0 }}
+				</td>
+				<td>
+				<a href='javascript:dianbook({{item.0}},"{{item.1}}")'>{{ item.1 }}</a>
+				&nbsp;&nbsp;
+				<a href='../addpage/?bookid={{item.0}}' target='_blank'>添加宣传页</a>
+				&nbsp;&nbsp;
+				<a href='../bindmenu/?bookid={{item.0}}&bookname={{item.1}}' target='_blank'>绑定菜单</a>
+				&nbsp;&nbsp;
+				<a href='../bindcategory/?bookid={{item.0}}&bookname={{item.1}}' target='_blank'>绑定类别</a>
+				</td>
+				<td>
+					{% for item1 in item.2 %}
+						{{item1.1}}&nbsp;
+						{%if item1.2 == 0 %}
+							男
+						{% else %}
+							女
+						{% endif %}&nbsp;
+						{{item1.3}}&nbsp;
+						{%if item1.4 == 0 %}
+							白
+						{% elif item1.4 == 1 %}
+							黄
+						{% elif item1.4 == 2 %}
+							棕
+						{% elif item1.4 == 3 %}
+							黑
+						{% endif %}
+						<br>
+					{% endfor %}
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<br/>
+		<!-- -->
+	</td>
+  </tr>
+  </table>
+ </body>
+</html>

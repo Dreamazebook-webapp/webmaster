@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script>
+  function addChildmenu(mid,mname){
+	myform.pid.value = mid;
+	myform.pname.value=mname;
+  }
+  function delmenu(mid){
+	if(confirm("确定删除吗？"))
+	  {
+		location.href="../delmenu/?mid="+mid;
+	  }
+  }
+  </script>
+ </head>
+ <body>
+  <table border="1" align="center" width="80%">
+  <tr>
+	<td colspan="2" align="center">后台管理</td>
+  </tr>
+  <tr>
+	<td width="20%" align="right">
+		<table align="center">
+			<tr><td><a href="../menu/">菜单管理</a></td></tr>
+			<tr><td><a href="../bcategory/">类别管理</a></td></tr>
+			<tr><td><a href="../index/">绘本管理</td></tr>
+			{% for item in booklist %}
+			<tr>
+				<td><a href="../pbcontent/?id={{item.0}}&bookname={{item.1}}">{{ item.1 }}</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+	</td>
+	<td>
+	<!-- 中间 -->
+		<!--<a href="#">创建菜单</a>-->
+		<br/>
+		<center>菜单管理</center>
+		<br/>
+		<form name="myform" action="../addmenu/" method="post">
+			<table border="1" align="center">
+				<tr>
+					<td align="right">父菜单:</td>
+					<td>
+						<input type="text" name="pname" readonly>
+						<input type="hidden" name="pid" value="0">
+					</td>
+				</tr>
+				<tr>
+					<td align="right">菜单名称:</td>
+					<td><input type="text" name="mname"></td>
+				</tr>
+				<tr>
+					<td align="right">链接:</td>
+					<td><input type="text" name="mlink"></td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2">
+						{% csrf_token %}
+						<input type="submit" value="新增菜单">
+					</td>
+				</tr>
+			</table>
+		</form>
+		<br/>
+		<table align="center" border="1" width="80%">
+			<tr>
+				<td>主菜单</td><td>子菜单</td>
+			</tr>
+			{% for item in menu %}
+			<tr>
+				<td>
+					{{ item.2 }}
+					&nbsp;&nbsp;
+					<a href="javascript:addChildmenu({{item.0}},'{{item.2}}')">添加子菜单</a>
+					&nbsp;&nbsp;
+					<a href="javascript:delmenu({{item.0}})">删除</a>
+				</td>
+				<td>
+					<ul>
+					{% for item1 in item.4%}
+						<li>
+						{{item1.2}}
+						&nbsp;&nbsp;
+						<a href="javascript:addChildmenu({{item1.0}},'{{item1.2}}')">添加子菜单</a>
+					&nbsp;&nbsp;
+						<a href="javascript:delmenu({{item1.0}})">删除</a>
+						<ul>
+						{% for item2 in item1.4%}
+							<li>
+								{{item2.2}}
+								&nbsp;&nbsp;
+								<a href="javascript:delmenu({{item2.0}})">删除</a>
+							</li>
+						{% endfor %}
+						</ul>
+						</li>
+					{% endfor %}
+					</ul>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<br/>
+		<!-- -->
+	</td>
+  </tr>
+  </table>
+ </body>
+</html>

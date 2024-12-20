@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+ </head>
+ <body>
+ <form method="post" action="/manage/login/">
+	  <table align="center" border="1">
+	  <tr>
+		<td>管理员登录</td>
+	  </tr>
+	  <tr>
+		<td>用户名:</td><td><input type="text" name="uname"></td>
+	  </tr>
+	  <tr>
+		<td>密码:</td><td><input type="password" name="pwd"></td>
+	  </tr>
+	  <tr>
+		<td align="center" colspan="22">
+			 {% csrf_token %}
+			<input type="submit" value="登录">
+		</td>
+	  </tr>
+	  </table>
+  </form>
+ </body>
+</html>

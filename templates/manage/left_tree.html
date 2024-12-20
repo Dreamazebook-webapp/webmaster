@@ -1,0 +1,41 @@
+<table align="center">
+		<tr><td><a href="../menu/">菜单管理</a></td></tr>
+		<tr><td><a href="../bcategory/">类别管理</a></td></tr>
+			<tr><td><a href="../index/">绘本管理</td></tr>
+			{% for item in booklist %}
+			<tr>
+				<td>
+					<ul>
+						<li>
+						{{ item.1 }}
+						<ul>
+						{% for item1 in item.2 %}
+							<li>
+								<a href="../pbcontent/?pbid={{item1.0}}&bookname={{item1.1}},{{item1.2}},{{item1.3}},{{item1.4}}">
+								{{item1.1}}&nbsp;
+								{%if item1.2 == 0 %}
+									男
+								{% else %}
+									女
+								{% endif %}&nbsp;
+								{{item1.3}}&nbsp;
+								{%if item1.4 == 0 %}
+									白
+								{% elif item1.4 == 1 %}
+									黄
+								{% elif item1.4 == 2 %}
+									棕
+								{% elif item1.4 == 3 %}
+									黑
+								{% endif %}
+								</a>
+							
+							</li>
+						{% endfor %}
+						</ul>
+						</li>
+					
+				</td>
+			</tr>
+			{% endfor %}
+		</table>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  <script>
+	//消除前后空格
+	function str_trim(str){
+		if (!String.prototype.trim) {
+		  String.prototype.trim = function() {
+			return str.replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, '');
+		  };
+		}
+		var trimmedStr = str.trim();
+		return trimmedStr;
+	}
+	function onsub(){
+		if (str_trim(myform.xpos.value)=='')
+		{
+			alert('请填写文字x方向位置');
+			myform.xpos.focus();
+			return false;
+		}else if(str_trim(myform.letterwidth.value)==''){
+			alert('请填写单字母宽度');
+			myform.letterwidth.focus();
+			return false;
+		}else if(str_trim(myform.sname.value)==''){
+			alert('请填写用户姓名');
+			myform.cname.focus();
+			return false;
+		}else if(str_trim(myform.xpos.value)==''){
+			alert('名字纵向位置');
+			myform.xpos.focus();
+			return false;
+		}else if(str_trim(myform.wordsize.value)==''){
+			alert('名字字体大小');
+			myform.wordsize.focus();
+			return false;
+		}
+		return true;
+	}
+	//滚轮控制图片缩放
+	var  scale = 1
+	function bigimg(obj){
+		//alert(event.wheelDelta);
+		if(event.wheelDelta>0){
+			scale+=0.05
+			obj.style.transform=`scale(${scale})`
+		}else{
+			scale-=0.05
+			obj.style.transform=`scale(${scale})`
+		}
+	}
+
+	window.onload=function(){
+		var divMove = document.getElementById("originalImg");
+		
+		divMove.onwheel=function(e){
+			if(e.wheelDelta>0){
+				scale+=0.05
+				divMove.style.transform=`scale(${scale})`
+			}else{
+				scale-=0.05
+				divMove.style.transform=`scale(${scale})`
+			}
+		}
+	}
+
+  </script>
+ </head>
+ <body>
+  <center>{{bookname}}</center>
+  <table width="80%" border="1" align="center">
+	<tr>
+		<td align="center">
+		<div id="originalImg"><img style="width:50%;" src="/{{picrs1.0}}" alt=""></div>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<img src="{{picrs2.13}}" width="50%" height="50%" onmousewheel="return bigimg(this)" style="cursor:pointer">
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+		<form name="myform" method="post" action="../mergepic4/" onsubmit="return onsub();">
+			<input type="radio" name="lrflag" value="0" checked>名字在左侧文字尾&nbsp;&nbsp;
+			<input type="radio" name="lrflag" value="1">名字在右侧文字头<br>
+			<script>
+				myform.cflag[{{picrs2.0}}].checked=true;
+			</script>
+			左侧文字:<input type="text" name="leftwords" {% if picrs2.1 != None %}value="{{picrs2.1}}"{% endif %}><br>
+			左文圆心点x坐标:<input type="text" name="cposx1" placeholder="1800" {% if picrs2.2 != None %}value="{{picrs2.2}}"{% endif %}><br/>
+			左文圆心点y坐标:<input type="text" name="cposy1" placeholder="2115" {% if picrs2.3 != None %}value="{{picrs2.3}}"{% endif %}><br/>
+			左文半径:<input type="text" name="r1" placeholder="2115" {% if picrs2.4 != None %}value="{{picrs2.4}}"{% endif %}><br/>
+			右侧文字:<input type="text" name="rightwords" {% if picrs2.5 != None %}value="{{picrs2.5}}"{% endif %}><br>
+			右文圆心点x坐标:<input type="text" name="cposx2" placeholder="1800" {% if picrs2.6 != None %}value="{{picrs2.6}}"{% endif %}><br/>
+			右文圆心点y坐标:<input type="text" name="cposy2" placeholder="2115" {% if picrs2.7 != None %}value="{{picrs2.7}}"{% endif %}><br/>
+			右文半径:<input type="text" name="r2" placeholder="2115" {% if picrs2.8 != None %}value="{{picrs2.8}}"{% endif %}><br/>
+			字符间弧度:<input type="text" name="charangle" placeholder="2" {% if picrs2.9 != None %}value="{{picrs2.9}}"{% endif %}><br/>
+			候选字体：
+			<select name="imgfont">
+				<option value="TufuliArabic-Regular.ttf">TufuliArabic-Regular.ttf</option>
+				<option value="AdobeGurmukhi-Bold.otf">AdobeGurmukhi-Bold.otf</option>
+				<option value="AdobeGurmukhi-Regular.otf">AdobeGurmukhi-Regular.otf</option>
+				<option value="simsunb.ttf">simsunb.ttf</option>
+				<option value="arial.ttf">arial.ttf</option>
+			</select>
+			{% if picrs2.10 != None %}
+			<script>
+				dic_imgfont = {'TufuliArabic-Regular.ttf':0,'AdobeGurmukhi-Bold.otf':1,'AdobeGurmukhi-Regular.otf':2,'simsunb.ttf':3,'arial.ttf':4}
+				myform.imgfont.options[dic_imgfont["{{picrs2.10}}"]].selected=true;
+			</script>
+			{% endif %}
+			<br/>
+			字体大小:<input type="text" name="fontsize"  placeholder="90" {% if picrs2.11 != None %}value="{{picrs2.11}}"{% endif %}><br/>
+			字体颜色:
+			<select name="fontcolor">
+				<option value="0,0,0">黑色</option>
+				<option value="255,255,255">白色</option>
+			</select>
+			{% if picrs2.12 != None %}
+			<script>
+				dic_fontcolor={"0,0,0":0,"255,255,255":1}
+				myform.fontcolor.options[dic_fontcolor["{{picrs2.12}}"]].selected=true;
+			</script>
+			{% endif %}
+			<br/>
+			用户姓名:<input type="text" name="sname"  placeholder="Lili" {% if picrs2.14 != None %}value="{{picrs2.14}}"{% endif %}><br/>
+			<input type="hidden" name="pbid" value="{{pbid}}">
+			<input type="hidden" name="picid" value="{{picid}}">
+			<input type="hidden" name="bookname" value="{{bookname}}">
+			<input type="hidden" name="blankpic" value="{{picrs1.1}}">
+			{% csrf_token %}
+			<input type="submit" value="提交">
+		</form>
+		</td>
+	</tr>
+	
+  </table>
+	
+ </body>
+</html>

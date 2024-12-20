@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+ </head>
+ <body>
+ <center>
+	<br>
+	{{bookname}}
+	<br><br>
+	用下列复选框选择本书所属菜单
+ </center>
+
+ <form name="myform" action="../bindmenuexec" method="get">
+ <table align="center">
+	<tr>
+		<td style="border:solid 1px green">
+			 <ul>
+				  {% for item in bmenu %}
+					<li>{{item.2}}&nbsp;<input type="checkbox" name="menuid" value="{{item.0}}">
+						<ul>
+							{% for item1 in item.4 %}
+								<li>
+									{{item1.2}}&nbsp;<input type="checkbox" name="menuid" value="{{item1.0}}">
+								</li>
+							{% endfor %}
+						</ul>
+					</li>
+				  {% endfor %}
+			  </ul>
+			  <script>
+			    var bindObj = {};
+			    {% for item in rs1 %}
+					bindObj[{{item.0}}]=0;
+				{% endfor %}
+				bclen = myform.menuid.length;
+				for (i=0;i<bclen;i++)
+				{
+					if(myform.menuid[i].value in bindObj){
+						myform.menuid[i].checked=true;
+					}
+				}
+			  </script>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<input type="hidden" name="bookid" value="{{bookid}}">
+			<input type="submit" value="提交绑定">
+		</td>
+	</tr>
+	</table>
+  </form>
+ </body>
+</html>

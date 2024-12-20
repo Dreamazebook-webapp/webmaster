@@ -1,0 +1,89 @@
+#---图加名字+寄语------------------
+def mergepic2(request):
+	if request.method == 'POST':
+		pbid = request.POST.get("pbid")
+		picid = request.POST.get("picid")
+		cname = request.POST.get("cname")
+		nameposy = int(request.POST.get("nameposy"))
+		wordsize = int(request.POST.get("wordsize"))
+		pagepic = request.POST.get("pagepic")
+		leftpic = request.POST.get("leftpic")
+		rightpic = request.POST.get("rightpic")
+		centerpos = int(request.POST.get("centerpos"))	#中间点位置
+		letterwidth = int(request.POST.get("letterwidth"))
+		imgfont1 = request.POST.get("imgfont1")
+		fontcolor = request.POST.get("fontcolor")
+		fcolorList = fontcolor.split(',')
+		fcolorList = [int(elem) for elem in fcolorList]
+		fontColor = tuple(fcolorList)
+		img0 = cv2.imread(pagepic)
+		img_left = cv2.imread(leftpic)
+		left_width = img_left.shape[1]  # 左图宽度
+		cnameLen = len(cname)*letterwidth	#名字长度
+		#左图起始位置=中间点位置-半个名字的长度-空格-左图宽度
+		leftpos = centerpos-int(cnameLen/2)-letterwidth-left_width
+		wordpos = leftpos+left_width+letterwidth	#文字位置
+		rspacing = int(request.POST.get("rspacing"))
+		rightpos = wordpos + cnameLen
+		if rspacing==0:
+			rightpos += letterwidth	#右图位置
+
+		newImg1 = overlay_pixel(img0,img_left,leftpos,0)	#920
+		img_right = cv2.imread(rightpic)
+		newImg2 = overlay_pixel(newImg1,img_right,rightpos,0)
+		#----------绘制名字文字-----------
+		imgPIL1 = Image.fromarray(cv2.cvtColor(newImg2, cv2.COLOR_BGR2RGB))
+		drawPIL1 = ImageDraw.Draw(imgPIL1)
+		textSize1 = wordsize
+		fontText1 = ImageFont.truetype("media/font/%s"%(imgfont1), textSize1, encoding="utf-8")
+		pos = (wordpos, nameposy)
+		color = fontColor
+		drawPIL1.text(pos, cname, color, font=fontText1)
+		imgPutText1 = cv2.cvtColor(np.asarray(imgPIL1), cv2.COLOR_RGB2BGR)
+		'''
+		font_file = "/media/font/TufuliArabic-Regular.ttf"
+		# 设置文本起始坐标（左下角坐标）
+		org = (wordpos, nameposy)
+		# 设置文本缩放比例
+		font_scale = wordsize
+		# 设置文本颜色，BGR格式
+		color = (255, 255, 255)
+		# 设置文本线条类型
+		thickness = 2
+		cv2.putText(newImg2, cname, org, cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness, lineType=cv2.LINE_AA, bottomLeftOrigin=False)
+		'''
+		#----------------写内容------------------------
+		msgy = int(request.POST.get("msgy"))		#内容纵向坐标
+		imgfont2 = request.POST.get("imgfont2")		#内容字体
+		msgwordsize = request.POST.get("msgwordsize")	#内容字体大小
+		#msgletterw = request.POST.get("msgletterw")		#内容字母宽度
+		#msgletterh = request.POST.get("msgletterh")		#内容行高度
+		msgleftlen = int(request.POST.get("msgleftlen"))		#内容行长度
+		content = request.POST.get("content")
+		content1 = content.replace('\n','\n\n')
+		imgPIL2 = Image.fromarray(cv2.cvtColor(imgPutText1, cv2.COLOR_BGR2RGB))
+		drawPIL2 = ImageDraw.Draw(imgPIL2)
+		textSize2 = int(msgwordsize)
+		fontText2 = ImageFont.truetype("media/font/%s"%(imgfont2), textSize2, encoding="utf-8")
+		leftpos2 = centerpos-msgleftlen
+		pos2 = (leftpos2,msgy)
+
+		drawPIL2.text(pos2, content1, color, font=fontText2)
+		imgPutText2 = cv2.cvtColor(np.asarray(imgPIL2), cv2.COLOR_RGB2BGR)
+
+		#current_timestamp = time.time()
+		#temptime = int(current_timestamp)
+		cv2.imwrite('/media/newimg/%s_%s.png'%(pbid,picid),imgPutText2)
+		mergeImgPath = '/media/newimg/%s_%s.png'%(pbid,picid)
+		
+		sql = "update setpic3 set centerpos=%s,letterwidth=%s,nameposy=%s,imgfont1=%s,wordsize=%s,fontcolor=%s,rspacing=%s,msgy=%s,imgfont2=%s,msgwordsize=%s,msgleftlen=%s,mergepic=%s,sname=%s,scontent=%s where picid=%s"
+
+		param = (centerpos,letterwidth,nameposy,imgfont1,wordsize,fontcolor,rspacing,msgy,imgfont2,msgwordsize,msgleftlen,mergeImgPath,cname,content,picid)
+		with connection.cursor() as cursor:
+			rs=cursor.execute(sql,param)
+			connection.commit()
+		
+		#pbid = request.POST.get("pbid")
+		bookname = request.POST.get("bookname")
+	return redirect('/manage/wordpos/?picid=%s&id=%s&bookname=%s'%(picid,pbid,bookname))
+	#return HttpResponse("mergepic")

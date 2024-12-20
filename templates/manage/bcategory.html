@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script>
+  function addChildCategory(bcid,bcname){
+	myform.pid.value = bcid;
+	myform.pname.value=bcname;
+  }
+  function delmenu(bcid){
+	if(confirm("确定删除吗？"))
+	  {
+		location.href="../delbcategory/?bcid="+bcid;
+	  }
+  }
+  </script>
+ </head>
+ <body>
+  <table border="1" align="center" width="80%">
+  <tr>
+	<td colspan="2" align="center">后台管理</td>
+  </tr>
+  <tr>
+	<td width="20%" align="right">
+		<table align="center">
+			<tr><td><a href="../menu/">菜单管理</a></td></tr>
+			<tr><td><a href="../bcategory/">类别管理</a></td></tr>
+			<tr><td><a href="../index/">绘本管理</td></tr>
+			{% for item in booklist %}
+			<tr>
+				<td><a href="../pbcontent/?id={{item.0}}&bookname={{item.1}}">{{ item.1 }}</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+	</td>
+	<td>
+	<!-- 中间 -->
+		<!--<a href="#">创建菜单</a>-->
+		<br/>
+		<center>类别管理</center>
+		<br/>
+		<form name="myform" action="../addbcategory/" method="post">
+			<table border="1" align="center">
+				<tr>
+					<td align="right">父菜单:</td>
+					<td>
+						<input type="text" name="pname" readonly>
+						<input type="hidden" name="pid" value="0">
+					</td>
+				</tr>
+				<tr>
+					<td align="right">类别名称:</td>
+					<td><input type="text" name="bcname"></td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2">
+						{% csrf_token %}
+						<input type="reset" value="重置">&nbsp;&nbsp; 
+						<input type="submit" value="新增类别">
+					</td>
+				</tr>
+			</table>
+		</form>
+		<br/>
+		<table align="center" border="1" width="80%">
+			<tr>
+				<td>一级类别</td><td>多级类别</td>
+			</tr>
+			{% for item in bcategory %}
+			<tr>
+				<td>
+					{{ item.2 }}
+					&nbsp;&nbsp;
+					<a href="javascript:addChildCategory({{item.0}},'{{item.2}}')">添加子菜单</a>
+					&nbsp;&nbsp;
+					<a href="javascript:delmenu({{item.0}})">删除</a>
+				</td>
+				<td>
+					<ul>
+					{% for item1 in item.3 %}
+						<li>
+							{{ item1.2 }}&nbsp;&nbsp;
+							<a href="javascript:addChildCategory({{item1.0}},'{{item1.2}}')">添加子菜单</a>
+							&nbsp;&nbsp;
+							<a href="javascript:delmenu({{item1.0}})">删除</a>
+							<ul>
+								{% for item2 in item1.3 %}
+								<li>
+								{{item2.2}}&nbsp;&nbsp;
+								<a href="javascript:delmenu({{item2.0}})">删除</a>
+								</li>
+								{% endfor %}
+							</ul>
+						</li>
+					{% endfor %}
+					</ul>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<br/>
+		<!-- -->
+	</td>
+  </tr>
+  </table>
+ </body>
+</html>

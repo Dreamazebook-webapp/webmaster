@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  <script>
+	var ftb,tlen;
+	window.onload=function(){
+		ftb = document.getElementById("ftb");
+		tlen = ftb.rows.length-1;
+		myform.nameflag[0].checked=true;
+		for(i=3;i<tlen;i++){
+			ftb.rows[i].style.display="none";
+		}
+	}
+	function nflagchange(thisa){
+		if(thisa.value==0){
+			for(i=3;i<tlen;i++){
+				ftb.rows[i].style.display="none";
+			}
+		}else{
+			ftb.rows[3].style.display="";
+			ntypeChange();
+		}
+	}
+	function ntypeChange(){
+		if (myform.nametype[0].checked)
+			{
+				ftb.rows[4].style.display="none";
+				ftb.rows[5].style.display="none";
+				ftb.rows[6].style.display="";
+				ftb.rows[7].style.display="";
+			}else{
+				ftb.rows[6].style.display="none";
+				ftb.rows[7].style.display="none";
+				ftb.rows[4].style.display="";
+				ftb.rows[5].style.display="";
+			}
+	}
+  </script>
+ </head>
+ <body>
+  <table border="1" align="center" width="80%">
+  <tr>
+	<td colspan="2" align="center">后台管理</td>
+  </tr>
+  <tr>
+	<td width="20%" align="right">
+		<table align="center">
+			<tr><td><a href="../index/">绘本列表</td></tr>
+			{% for item in booklist %}
+			<tr>
+				<td><a href="../pbcontent/?id={{item.0}}&bookname={{item.1}}">{{ item.1 }}</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+	</td>
+	<td>
+	<!-- 中间 -->
+		<!--<a href="#">创建绘本</a>-->
+		<br/>
+		<center>{{bookname}}</center>
+		<br/>
+		<form name="myform" action="../addpic/" method="post" enctype="multipart/form-data">
+			<table border="1" align="center" id="ftb">
+				<tr>
+					<td align="right">页号:</td>
+					<td><input type="text" name="pagenum"></td>
+				</tr>
+				<tr>
+					<td align="right">绘本图片:</td>
+					<td><input type="file" name="pagepic"></td>
+				</tr>
+				<tr>
+					<td align="right">是否含动态名字:</td>
+					<td><input type="radio" name="nameflag" value="0" checked onchange="nflagchange(this)">不含&nbsp;<input type="radio" name="nameflag" value="1" onchange="nflagchange(this)">含有</td>
+				</tr>
+				<tr id="nametypeid">
+					<td align="right">动态名字类型:</td>
+					<td><input type="radio" name="nametype" value="0" checked onchange="ntypeChange()">全文字&nbsp;<input type="radio" name="nametype" value="1" onchange="ntypeChange()">图像拼接</td>
+				</tr>
+				<tr>
+					<td align="right">左侧文字图片:</td>
+					<td><input type="file" name="leftpic"></td>
+				</tr>
+				<tr>
+					<td align="right">右侧文字图片:</td>
+					<td><input type="file" name="rightpic"></td>
+				</tr>
+				<tr>
+					<td align="right">左侧文字:</td>
+					<td><input type="text" name="leftwords"></td>
+				</tr>
+				<tr>
+					<td align="right">右侧文字:</td>
+					<td><input type="text" name="rightwords"></td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2">
+						{% csrf_token %}
+						<input type="hidden" name="pbid" value="{{pbid}}">
+						<input type="hidden" name="bookname" value="{{bookname}}">
+						<input type="submit" value="新增绘本页">
+					</td>
+				</tr>
+			</table>
+		</form>
+		<br/>
+		<table align="center" border="1" width="80%">
+			<tr>
+				<td>页号</td><td>绘本页</td><td>修改</td>
+<td>删除</td><td>文字设置</td>			</tr>
+			{% for item in picrs %}
+			<tr>
+				<td>{{ item.1 }}</td><td><img src='../../{{ item.2 }}'></td><td><a href="../updatepic/?picid={{item.0}}&id={{pbid}}&bookname={{bookname}}">修改</a></td>
+				<td><a href="../delpic/?picid={{ item.0 }}&pbid={{pbid}}&bookname={{bookname}}">删除</a></td>
+				<td><a href="../wordpos/?picid={{item.0}}&id={{pbid}}&bookname={{bookname}}  ">文字位置</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+		<br/>
+		<!-- -->
+	</td>
+  </tr>
+  </table>
+ </body>
+</html>

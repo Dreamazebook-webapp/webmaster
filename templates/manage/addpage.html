@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <script>
+	function delpage(pageid){
+		if (confirm("确定删除吗？"))
+		{
+			location.href="../delpage/?bookid={{picbookrs.0}}&pageid="+pageid;
+		}
+	}
+  </script>
+ </head>
+ <body>
+	<center>
+		给&nbsp;{{picbookrs.1}}&nbsp;添加介绍页
+	</center>
+	<br/>
+  <form name="myform" action="../insertpage/" method="post" enctype="multipart/form-data" onsubmit="return onsub();">
+			<table border="1" align="center">
+				<tr>
+					<td align="right">页号:</td>
+					<td><input type="text" name="pagenum"></td>
+				</tr>
+				<tr>
+					<td align="right">绘本展示图:</td>
+					<td><input type="file" name="pagepic"></td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2">
+						{% csrf_token %}
+						<input type="hidden" name="pbid" value="{{picbookrs.0}}">
+						<input type="submit" value="新增绘本页">
+					</td>
+				</tr>
+			</table>
+		</form>
+		<br/>
+		<table align="center" border="1" width="80%">
+			<tr>
+				<td>页号</td>
+				<td>绘本页</td>
+				<td>删除</td>
+			</tr>
+			{% for item in bookpage %}
+			<tr>
+				<td>{{ item.1 }}</td>
+				<td><img src='../../{{ item.2 }}'></td>
+				<td><a href="javascript:delpage({{item.0}})">删除</a></td>
+			</tr>
+			{% endfor %}
+		</table>
+ </body>
+</html>
