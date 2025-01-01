@@ -76,12 +76,44 @@
   <table width="80%" border="1" align="center">
 	<tr>
 		<td align="center">
-		<div id="originalImg"><img style="width:50%;" src="/{{picrs1.0}}" alt=""></div>
+		<div id="originalImg">
+			{% if vflag == '0' %}
+				<img style="width:50%;" src="/{{picrs1.0}}" onmousewheel="return bigimg(this)"><br>
+				300-dpi图
+			{% else %}
+				<img style="width:50%;" src="/{{picrs1.1}}" onmousewheel="return bigimg(this)"><br>
+				72-dpi图
+			{% endif %}
+		</div>
 		</td>
 	</tr>
 	<tr>
 		<td align="center">
-			<img src="{{picrs2.18}}" width="50%" height="50%" onmousewheel="return bigimg(this)" style="cursor:pointer">
+			<svg xmlns="http://www.w3.org/2000/svg" version="1.1" onmousewheel="return bigimg(this)" style="cursor:pointer">
+			{% if vflag == '0' %}
+				  <image href="/{{picrs1.2}}" width="100%" height="100%"/>
+			{% else %}
+				  <image href="/{{picrs1.3}}" width="100%" height="100%"/>
+			{% endif %}
+				  <style>
+					@font-face {
+					  font-family: 'svgfont1';
+					  src: url('/media/font/{{picrs2.5}}') format('truetype');
+					}
+					@font-face {
+					  font-family: 'svgfont2';
+					  src: url('/media/font/{{picrs2.13}}') format('truetype');
+					}
+				  </style>
+				  <text x="{{picrs2.3}}" y="{{picrs2.4}}" font-family="svgfont1"  style="font-size:{{picrs2.6}}px;fill:rgb({{picrs2.7}});" text-anchor='{% if picrs2.2 == 0 %}start{% else %}middle{% endif %}'>{{picrs2.0}}{{picrs2.16}}{{picrs2.1}}</text>
+				  <text x="{{picrs2.11}}" y="{{picrs2.12}}" font-family="svgfont2"  style="font-size:{{picrs2.14}}px;fill:rgb({{picrs2.15}});" text-anchor='{% if picrs2.10 == 0 %}start{% else %}middle{% endif %}'>{{picrs2.8}}{{picrs2.17}}{{picrs2.9}}</text>
+			</svg>
+			<br>
+			{% if vflag == '0' %}
+				300-dpi-合成图
+			{% else %}
+				72-dpi-合成图
+			{% endif %}
 		</td>
 	</tr>
 	<tr>
@@ -94,9 +126,8 @@
 			<script>
 				myform.cflag1[{{picrs2.2}}].checked=true;
 			</script>
-			x方向位置1:<input type="text" name="xpos1" placeholder="1800" {% if picrs2.3 != None %}value="{{picrs2.3}}"{% endif %}><br/>
-			y方向位置1:<input type="text" name="ypos1" placeholder="2115" {% if picrs2.4 != None %}value="{{picrs2.4}}"{% endif %}><br/>
-			单字母宽度1:<input type="text" name="letterwidth1" placeholder="42" {% if picrs2.5 != None %}value="{{picrs2.5}}"{% endif %}><br/>
+			x方向位置1:<input type="text" name="xpos1" placeholder="200" {% if picrs2.3 != None %}value="{{picrs2.3}}"{% endif %}><br/>
+			y方向位置1:<input type="text" name="ypos1" placeholder="120" {% if picrs2.4 != None %}value="{{picrs2.4}}"{% endif %}><br/>
 			候选字体1：
 			<select name="imgfont1">
 				<option value="TufuliArabic-Regular.ttf">TufuliArabic-Regular.ttf</option>
@@ -105,39 +136,38 @@
 				<option value="simsunb.ttf">simsunb.ttf</option>
 				<option value="arial.ttf">arial.ttf</option>
 			</select>
-			{% if picrs2.6 != None %}
+			{% if picrs2.5 != None %}
 			<script>
 				dic_imgfont = {'TufuliArabic-Regular.ttf':0,'AdobeGurmukhi-Bold.otf':1,'AdobeGurmukhi-Regular.otf':2,'simsunb.ttf':3,'arial.ttf':4}
-				myform.imgfont1.options[dic_imgfont["{{picrs2.6}}"]].selected=true;
+				myform.imgfont1.options[dic_imgfont["{{picrs2.5}}"]].selected=true;
 			</script>
 			{% endif %}
 			<br/>
-			字体大小1:<input type="text" name="fontsize1"  placeholder="90" {% if picrs2.7 != None %}value="{{picrs2.7}}"{% endif %}><br/>
+			字体大小1:<input type="text" name="fontsize1"  placeholder="90" {% if picrs2.6 != None %}value="{{picrs2.6}}"{% endif %}><br/>
 			字体颜色1:
 			<select name="fontcolor1">
 				<option value="0,0,0">黑色</option>
 				<option value="255,255,255">白色</option>
 			</select>
-			{% if picrs2.8 != None %}
+			{% if picrs2.7 != None %}
 			<script>
 				dic_fontcolor={"0,0,0":0,"255,255,255":1}
-				myform.fontcolor1.options[dic_fontcolor["{{picrs2.8}}"]].selected=true;
+				myform.fontcolor1.options[dic_fontcolor["{{picrs2.7}}"]].selected=true;
 			</script>
 			{% endif %}
 			<br/>
-			名字1:<input type="text" name="text1"  placeholder="Lili" {% if picrs2.19 != None %}value="{{picrs2.19}}"{% endif %}><br/>
+			名字1:<input type="text" name="text1"  placeholder="Lili" {% if picrs2.16 != None %}value="{{picrs2.16}}"{% endif %}><br/>
 			<!-------------------------------------------------->
 			<hr>
-			左侧文字2:<input type="text" name="leftwords2" {% if picrs2.9 != None %}value="{{picrs2.9}}"{% endif %}><br>
-			右侧文字2:<input type="text" name="rightwords2" {% if picrs2.10 != None %}value="{{picrs2.10}}"{% endif %}><br>
+			左侧文字2:<input type="text" name="leftwords2" {% if picrs2.8 != None %}value="{{picrs2.8}}"{% endif %}><br>
+			右侧文字2:<input type="text" name="rightwords2" {% if picrs2.9 != None %}value="{{picrs2.9}}"{% endif %}><br>
 			<input type="radio" name="cflag2" value="0" checked>整行居左2&nbsp;&nbsp;
 			<input type="radio" name="cflag2" value="1">整行居中2<br>
 			<script>
-				myform.cflag2[{{picrs2.11}}].checked=true;
+				myform.cflag2[{{picrs2.10}}].checked=true;
 			</script>
-			x方向位置2:<input type="text" name="xpos2" placeholder="1800" {% if picrs2.12 != None %}value="{{picrs2.12}}"{% endif %}><br/>
-			y方向位置2:<input type="text" name="ypos2" placeholder="2115" {% if picrs2.13 != None %}value="{{picrs2.13}}"{% endif %}><br/>
-			单字母宽度2:<input type="text" name="letterwidth2" placeholder="42" {% if picrs2.14 != None %}value="{{picrs2.14}}"{% endif %}><br/>
+			x方向位置2:<input type="text" name="xpos2" placeholder="200" {% if picrs2.11 != None %}value="{{picrs2.11}}"{% endif %}><br/>
+			y方向位置2:<input type="text" name="ypos2" placeholder="120" {% if picrs2.12 != None %}value="{{picrs2.12}}"{% endif %}><br/>
 			候选字体2：
 			<select name="imgfont2">
 				<option value="TufuliArabic-Regular.ttf">TufuliArabic-Regular.ttf</option>
@@ -146,32 +176,33 @@
 				<option value="simsunb.ttf">simsunb.ttf</option>
 				<option value="arial.ttf">arial.ttf</option>
 			</select>
-			{% if picrs2.15 != None %}
+			{% if picrs2.13 != None %}
 			<script>
 				dic_imgfont = {'TufuliArabic-Regular.ttf':0,'AdobeGurmukhi-Bold.otf':1,'AdobeGurmukhi-Regular.otf':2,'simsunb.ttf':3,'arial.ttf':4}
-				myform.imgfont2.options[dic_imgfont["{{picrs2.15}}"]].selected=true;
+				myform.imgfont2.options[dic_imgfont["{{picrs2.13}}"]].selected=true;
 			</script>
 			{% endif %}
 			<br/>
-			字体大小2:<input type="text" name="fontsize2"  placeholder="90" {% if picrs2.16 != None %}value="{{picrs2.16}}"{% endif %}><br/>
+			字体大小2:<input type="text" name="fontsize2"  placeholder="90" {% if picrs2.14 != None %}value="{{picrs2.14}}"{% endif %}><br/>
 			字体颜色2:
 			<select name="fontcolor2">
 				<option value="0,0,0">黑色</option>
 				<option value="255,255,255">白色</option>
 			</select>
-			{% if picrs2.17 != None %}
+			{% if picrs2.15 != None %}
 			<script>
 				dic_fontcolor={"0,0,0":0,"255,255,255":1}
-				myform.fontcolor2.options[dic_fontcolor["{{picrs2.17}}"]].selected=true;
+				myform.fontcolor2.options[dic_fontcolor["{{picrs2.15}}"]].selected=true;
 			</script>
 			{% endif %}
 			<br/>
-			名字2:<input type="text" name="text2"  placeholder="Lili" {% if picrs2.20 != None %}value="{{picrs2.20}}"{% endif %}><br/>
+			名字2:<input type="text" name="text2"  placeholder="Lili" {% if picrs2.17 != None %}value="{{picrs2.17}}"{% endif %}><br/>
 
 			<input type="hidden" name="pbid" value="{{pbid}}">
 			<input type="hidden" name="picid" value="{{picid}}">
 			<input type="hidden" name="bookname" value="{{bookname}}">
 			<input type="hidden" name="blankpic" value="{{picrs1.1}}">
+			<input type="hidden" name="vflag" value="{{vflag}}">
 			{% csrf_token %}
 			<input type="submit" value="提交">
 		</form>

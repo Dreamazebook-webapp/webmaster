@@ -102,12 +102,12 @@
 					<td><input type="text" name="pagenum"></td>
 				</tr>
 				<tr>
-					<td align="right">绘本原图:</td>
-					<td><input type="file" name="pagepic"></td>
+					<td align="right">绘本原图300:</td>
+					<td><input type="file" name="pagepic300"></td>
 				</tr>
 				<tr>
-					<td align="right">绘本底图:</td>
-					<td><input type="file" name="blankpic"></td>
+					<td align="right">绘本底图300:</td>
+					<td><input type="file" name="blankpic300"></td>
 				</tr>
 				<tr>
 					<td align="right">是否需要换头像:</td>
@@ -169,7 +169,7 @@
 <td>删除</td><td>文字设置</td>			</tr>
 			{% for item in picrs %}
 			<tr>
-				<td>{{ item.1 }}</td><td><img src='../../{{ item.2 }}'></td>
+				<td>{{ item.1 }}</td><td><img src='../../{{ item.2 }}' width='160' height='80'></td>
 				<td>
 					{% if item.3 == 0 %}
 						不换
@@ -187,7 +187,9 @@
 				<td><a href="javascript:delbookpic({{item.0}},{{item.3}},{{item.4}})">删除</a></td>
 				<td>
 					{% if item.4 == 1 %}
-					<a href="../wordpos/?picid={{item.0}}&pbid={{pbid}}&bookname={{bookname}}" target="_blank">文字设置</a>
+					<a href="../wordpos/?picid={{item.0}}&pbid={{pbid}}&bookname={{bookname}}&vflag=1" target="_blank">72图文字设置</a>
+					<p>
+					<a href="../wordpos/?picid={{item.0}}&pbid={{pbid}}&bookname={{bookname}}&vflag=0" target="_blank">300图文字设置</a>
 					{% endif %}
 				</td>
 			</tr>

@@ -15,7 +15,7 @@ def pbcontent(request):
 		bookname = request.GET.get("bookname")
 		booklist = getbooks()
 		with connection.cursor() as cursor:
-			cursor.execute("select id,pagenum,thumbnail,pflag,nameflag,nametype from bookpics where pbid=%s order by pagenum",(pbid,))
+			cursor.execute("select id,pagenum,pagepic72,pflag,nameflag,nametype from bookpics where pbid=%s order by pagenum",(pbid,))
 			picrs = cursor.fetchall()
 			if picrs is not None:
 				return render(request, 'manage/pbcontent.html',{"booklist":booklist,"pbid":pbid,'bookname':bookname,'picrs':picrs})
@@ -36,14 +36,60 @@ def dynamicText(request,picid):
 		sql2 = "insert into setpic2 set picid=%s"
 		param2 = [picid]
 	elif nametype=='3':	#单弧文字
-		sql2 = "insert into setpic2 set picid=%s"
+		sql2 = "insert into setpic3 set picid=%s"
 		param2 = [picid]
 	elif nametype=='4':	#双弧文字
 		sql2 = "insert into setpic4 set picid=%s"
 		param2 = [picid]
 	return sql2,param2
 
+#上传bookpic
+def uploadBookpic(request):
+	pbid = request.POST.get("pbid")
+	pagenum = request.POST.get("pagenum")
+	defflag = request.POST.get("defflag")		#是否默认页
+	dflag=0
+	if defflag=='1':							#如果不是默认页
+		dflag=time.time()
+
+	pagepic300 = request.FILES.get("pagepic300")
+	pagepic300Path,pagepic72Path='',''		#300图路径和72图路径
+	if pagepic300 is not None:
+		pagepic300Path = "media/pic300/%s_%s_%d_%s"%(pbid,pagenum,dflag,pagepic300.name)
+		f = open(pagepic300Path,mode='wb')
+		for chunk in pagepic300.chunks():
+			f.write(chunk)
+		f.close()
+		# 生成缩略图
+		thumbimg = Image.open(pagepic300Path)
+		thumb_size = (1151, 584)
+		thumbimg.thumbnail(thumb_size)
+		#thumb = thumbimg.resize(thumb_size, Image.ANTIALIAS)
+		pagepic72Path = "media/pic72/%s_%s_%d_1_%s"%(pbid,pagenum,dflag,pagepic300.name)
+		thumbimg.save(pagepic72Path)
+	
+	blankpic300 = request.FILES.get("blankpic300")
+	blankpic300Path,blankpic72Path='',''		#300图路径和72图路径
+	if blankpic300 is not None:
+		blankpic300Path = "media/blank300/%s_%s_%d_%s"%(pbid,pagenum,dflag,blankpic300.name)
+		f = open(blankpic300Path,mode='wb')
+		for chunk in blankpic300.chunks():
+			f.write(chunk)
+		f.close()
+		# 生成缩略图
+		thumbimg = Image.open(blankpic300Path)
+		thumb_size = (1151, 584)
+		thumbimg.thumbnail(thumb_size)
+		#thumb = thumbimg.resize(thumb_size, Image.ANTIALIAS)
+		blankpic72Path = "media/blank72/%s_%s_%d_1_%s"%(pbid,pagenum,dflag,blankpic300.name)
+		thumbimg.save(blankpic72Path)
+	else:
+		blankpic300Path,blankpic72Path=pagepic300Path,pagepic72Path
+	print(pagepic300Path,pagepic72Path,blankpic300Path,blankpic72Path)
+	return pagepic300Path,pagepic72Path,blankpic300Path,blankpic72Path
+
 #上传blankpic
+'''
 def uploadBlankpic(request):
 	pbid = request.POST.get("pbid")
 	blankpic = request.FILES.get("blankpic")
@@ -57,6 +103,7 @@ def uploadBlankpic(request):
 			fb.write(chunk)
 		fb.close()
 	return fbpath
+'''
 
 #插入绘本页
 def addpic(request):
@@ -65,43 +112,27 @@ def addpic(request):
 	#接收原图
 	pbid = request.POST.get("pbid")
 	pagenum = request.POST.get("pagenum")
-	ii = int(pagenum)
 	nametype = request.POST.get("nametype")
 	defflag = request.POST.get("defflag")		#是否默认页
-	dflag=0
-	if defflag=='1':							#如果不是默认页
-		dflag=time.time()
-
-	pagepic = request.FILES.get("pagepic")
-	fpath,thumbimgPath='',''
-	if pagepic is not None:
-		fpath = "media/upload/%s_%d_%d_%s"%(pbid,ii,dflag,pagepic.name)
-		f = open(fpath,mode='wb')
-		for chunk in pagepic.chunks():
-			f.write(chunk)
-		f.close()
-		# 生成缩略图
-		thumbimg = Image.open(fpath)
-		thumb_size = (128, 128)
-		thumbimg.thumbnail(thumb_size)
-		#thumb = thumbimg.resize(thumb_size, Image.ANTIALIAS)
-		thumbimgPath = "media/upload/%s_%d_%d_1_%s"%(pbid,ii,dflag,pagepic.name)
-		thumbimg.save(thumbimgPath)
-
+	
+	pagepic300Path,pagepic72Path,blankpic300Path,blankpic72Path = uploadBookpic(request)		#图片上传
 	nameflag = request.POST.get("nameflag")		#是否含有动态字
 	pflag = request.POST.get("pflag")			#是否需要换脸
 	sql,param = None,None
-	if pflag=='0' and nameflag=='0':	#无需换脸也无需动态字
-		sql = "insert into bookpics set pbid=%s,pagenum=%s,pagepic=%s,pflag=0,blankpic=%s,thumbnail=%s,nameflag=0,defflag=%s,mergepic=%s"
-		param = [pbid,pagenum,fpath,fpath,thumbimgPath,defflag,fpath]
+	if pflag=='0' and nameflag=='0':	#无需换脸也无需动态字,mergepic放入原图缩小版
+		sql = "insert into bookpics set pbid=%s,pagenum=%s,pagepic300=%s,pagepic72=%s,blankpic300=%s,blankpic72=%s,pflag=0,nameflag=0,defflag=%s,mergepic=%s"
+		param = [pbid,pagenum,pagepic300Path,pagepic72Path,blankpic300Path,blankpic72Path,defflag,pagepic72Path]
+	else:
+		sql = "insert into bookpics set pbid=%s,pagenum=%s,pagepic300=%s,pagepic72=%s,blankpic300=%s,blankpic72=%s,pflag=%s,nameflag=%s,nametype=%s,defflag=%s"
+		param = [pbid,pagenum,pagepic300Path,pagepic72Path,blankpic300Path,blankpic72Path,pflag,nameflag,nametype,defflag]
+	'''
 	elif pflag=='1' and nameflag=='0':	#仅需换脸
-		sql = "insert into bookpics set pbid=%s,pagenum=%s,pagepic=%s,pflag=1,blankpic=%s,thumbnail=%s,nameflag=0,defflag=%s"
-		param = [pbid,pagenum,fpath,fpath,thumbimgPath,defflag]
-	elif nameflag=='1':	#仅需动态字,无论换不换脸
-		#接收底图blankpic方法
-		blankpic = uploadBlankpic(request)
-		sql = "insert into bookpics set pbid=%s,pagenum=%s,pagepic=%s,pflag=0,blankpic=%s,thumbnail=%s,nameflag=1,nametype=%s,defflag=%s"
-		param = [pbid,pagenum,fpath,blankpic,thumbimgPath,nametype,defflag]	#blankpic
+		sql = "insert into bookpics set pbid=%s,pagenum=%s,pagepic300=%s,pagepic72=%s,blankpic300=%s,blankpic72=%s,pflag=1,nameflag=0,defflag=%s"
+		param = [pbid,pagenum,pagepic300Path,pagepic72Path,blankpic300Path,blankpic72Path,defflag]
+	elif nameflag=='1':	#仅需动态字,无论换不换脸(pflag是0还是1都不影响)
+		sql = "insert into bookpics set pbid=%s,pagenum=%s,pagepic300=%s,pagepic72=%s,blankpic300=%s,blankpic72=%s,pflag=%s,nameflag=1,nametype=%s,defflag=%s"
+		param = [pbid,pagenum,pagepic300Path,pagepic72Path,blankpic300Path,blankpic72Path,pflag,nametype,defflag]	#blankpic
+	'''
 	sql_id = "SELECT LAST_INSERT_ID()"			#获取插入bookpics后的返回id
 	with connection.cursor() as cursor:
 		cursor.execute(sql,param)
@@ -123,15 +154,13 @@ def delbookpic(request):
 		nametype = request.GET.get("nametype")
 		with connection.cursor() as cursor:
 			if nameflag=='1':
-				if nametype=="0":	#删setpic1
-					pass
-				elif nametype=="0":	#删setpic2
+				if nametype=="0":	#删setpic0
 					sql1 = "delete from setpic0 where picid=%s"
 					cursor.execute(sql1,(picid,))
-				elif nametype=="1":	#删setpic3
+				elif nametype=="1":	#删setpic1
 					sql1 = "delete from setpic1 where picid=%s"
 					rs1 = cursor.execute(sql1,(picid,))
-				elif nametype=="2":	#删setpic4
+				elif nametype=="2":	#删setpic2
 					sql1 = "delete from setpic2 where picid=%s"
 					rs1 = cursor.execute(sql1,(picid,))
 				elif nametype=="3":	#删setpic3
@@ -152,52 +181,48 @@ def wordpos(request):
 		picid = request.GET.get("picid")
 		pbid = request.GET.get("pbid")
 		bookname = request.GET.get("bookname")
+		vflag = request.GET.get("vflag")
 		#mergeImgPath = request.GET.get("mergeImgPath")
 		#booklist = getbooks()
-		sql1 = "select pagepic,blankpic,nameflag,nametype from bookpics where id=%s"
+		sql1 = "select pagepic300,pagepic72,blankpic300,blankpic72,nameflag,nametype from bookpics where id=%s"
 		with connection.cursor() as cursor:
 			cursor.execute(sql1,(picid,))
 			picrs1 = cursor.fetchone()
 			if picrs1 is not None:
-				nameflag = picrs1[2]
-				nametype = picrs1[3]
+				nameflag = picrs1[4]
+				nametype = picrs1[5]
 				if nameflag==1:
 					if nametype==0:	#单行文本
-						sql1 = "select leftwords,rightwords,cflag,xpos,ypos,letterwidth,imgfont,fontsize,fontcolor,sname,mergepic from setpic0 where picid=%s"
+						sql0 = "select leftwords,rightwords,cflag,xpos300,ypos300,xpos72,ypos72,imgfont,fontsize,fontcolor,sname from setpic0 where picid=%s"
+						cursor.execute(sql0,(picid,))
+						picrs2 = cursor.fetchone()
+						return render(request, 'manage/setpic0.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname,'vflag':vflag})
+					elif nametype==1:	#两行文本
+						sql1 = "select leftwords1,rightwords1,cflag1,xpos1,ypos1,imgfont1,fontsize1,fontcolor1,leftwords2,rightwords2,cflag2,xpos2,ypos2,imgfont2,fontsize2,fontcolor2,text1,text2 from setpic1 where picid=%s"
 						cursor.execute(sql1,(picid,))
 						picrs2 = cursor.fetchone()
-						if picrs2==None:
-							picrs2=[None,None,None,None,None,None,None,None,None,None,None]
-						return render(request, 'manage/setpic0.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname})
-					elif nametype==1:	#两行文本
-						sql2 = "select leftwords1,rightwords1,cflag1,xpos1,ypos1,letterwidth1,imgfont1,fontsize1,fontcolor1,leftwords2,rightwords2,cflag2,xpos2,ypos2,letterwidth2,imgfont2,fontsize2,fontcolor2,mergepic,text1,text2 from setpic1 where picid=%s"
+						#mergeImgPath = picrs2[9]
+						return render(request, 'manage/setpic1.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname,'vflag':vflag})
+					elif nametype==2:	#多行文本
+						sql2 = "select cflag,xpos,ypos,imgfont,fontsize,fontcolor,scontent from setpic2 where picid=%s"
 						cursor.execute(sql2,(picid,))
 						picrs2 = cursor.fetchone()
-						if picrs2==None:
-							picrs2=[None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
-						#mergeImgPath = picrs2[9]
-						return render(request, 'manage/setpic1.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname})
-					elif nametype==2:	#多行文本
-						sql3 = "select cflag,xpos,ypos,letterwidth,imgfont,fontsize,fontcolor,mergepic,scontent from setpic2 where picid=%s"
-						cursor.execute(sql3,(picid,))
-						picrs2 = cursor.fetchone()
-						if picrs2==None:
-							picrs2=[None,None,None,None,None,None,None,None,None]
-						return render(request, 'manage/setpic2.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname})
+						scontent = picrs2[6].split('\r\n')
+						return render(request, 'manage/setpic2.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,'scontent':scontent,"pbid":pbid,'bookname':bookname,'vflag':vflag})
 					elif nametype==3:	#单弧文字
 						sql1 = "select lrflag,sentence,cposx,cposy,rr,startangle,charangle,imgfont,fontsize,fontcolor,mergepic,sname from setpic3 where picid=%s"
 						cursor.execute(sql1,(picid,))
 						picrs2 = cursor.fetchone()
 						if picrs2==None:
 							picrs2=[None,None,None,None,None,None,None,None,None,None,None,None]
-						return render(request, 'manage/setpic3.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname})
+						return render(request, 'manage/setpic3.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname,'vflag':vflag})
 					elif nametype==4:	#双弧文字
 						sql1 = "select lrflag,leftwords,cposx1,cposy1,r1,rightwords,cposx2,cposy2,r2,charangle,imgfont,fontsize,fontcolor,mergepic,sname from setpic4 where picid=%s"
 						cursor.execute(sql1,(picid,))
 						picrs2 = cursor.fetchone()
 						if picrs2==None:
 							picrs2=[None,None,None,None,None,None,None,None,None,None,None,None,None,None,None]
-						return render(request, 'manage/setpic4.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname})
+						return render(request, 'manage/setpic4.html',{'picid':picid,'picrs1':picrs1,'picrs2':picrs2,"pbid":pbid,'bookname':bookname,'vflag':vflag})
 		return render(request, 'manage/pbcontent.html',{"pbid":pbid,'bookname':bookname})
 
 
@@ -270,6 +295,40 @@ def mergepic0(request):
 	if request.method == 'POST':
 		pbid = request.POST.get("pbid")
 		picid = request.POST.get("picid")
+		blankpic = request.POST.get("blankpic")
+		vflag = request.POST.get("vflag")
+		leftwords = request.POST.get("leftwords")
+		rightwords = request.POST.get("rightwords")
+		cflag = request.POST.get("cflag")
+		vflag = request.POST.get("vflag")		#0表300，1表72
+		xpos300 = request.POST.get("xpos300")
+		ypos300 = request.POST.get("ypos300")
+		xpos72 = request.POST.get("xpos72")
+		ypos72 = request.POST.get("ypos72")
+		#letterwidth = int(request.POST.get("letterwidth"))
+		imgfont = request.POST.get("imgfont")
+		fontsize = request.POST.get("fontsize")
+		fontcolor = request.POST.get("fontcolor")
+		sname = request.POST.get("sname")
+		bookname = request.POST.get("bookname")
+		#入库
+		if vflag=='0':
+			sql = "update setpic0 set leftwords=%s,rightwords=%s,cflag=%s,xpos300=%s,ypos300=%s,imgfont=%s,fontsize=%s,fontcolor=%s,sname=%s where picid=%s"
+			param = (leftwords,rightwords,cflag,xpos300,ypos300,imgfont,fontsize,fontcolor,sname,picid)
+		else:
+			sql = "update setpic0 set leftwords=%s,rightwords=%s,cflag=%s,xpos72=%s,ypos72=%s,imgfont=%s,fontsize=%s,fontcolor=%s,sname=%s where picid=%s"
+			param = (leftwords,rightwords,cflag,xpos72,ypos72,imgfont,fontsize,fontcolor,sname,picid)
+		with connection.cursor() as cursor:
+			cursor.execute(sql,param)
+			connection.commit()
+
+		return redirect('/manage/wordpos/?picid=%s&id=%s&bookname=%s&vflag=%s'%(picid,pbid,bookname,vflag))
+
+'''
+def mergepic0(request):
+	if request.method == 'POST':
+		pbid = request.POST.get("pbid")
+		picid = request.POST.get("picid")
 		leftwords = request.POST.get("leftwords")
 		rightwords = request.POST.get("rightwords")
 		cflag = request.POST.get("cflag")
@@ -311,9 +370,44 @@ def mergepic0(request):
 			cursor.execute(sql,param)
 			connection.commit()
 	return redirect('/manage/wordpos/?picid=%s&id=%s&bookname=%s'%(picid,pbid,bookname))
+'''
 
 from PIL import Image, ImageDraw, ImageFont
 #---双行纯文本---------------
+def mergepic1(request):
+	if request.method == 'POST':
+		pbid = request.POST.get("pbid")
+		picid = request.POST.get("picid")
+		bookname = request.POST.get("bookname")
+		blankpic = request.POST.get("blankpic")
+		vflag = request.POST.get("vflag")
+		#------------------------------------------
+		leftwords1 = request.POST.get("leftwords1")
+		rightwords1 = request.POST.get("rightwords1")
+		cflag1 = request.POST.get("cflag1")
+		xpos1 = request.POST.get("xpos1")
+		ypos1 = request.POST.get("ypos1")	#纵向位置
+		imgfont1 = request.POST.get("imgfont1")
+		fontsize1 = request.POST.get("fontsize1")
+		fontcolor1 = request.POST.get("fontcolor1")
+		text1 = request.POST.get("text1")
+		#----------------------------------------
+		leftwords2 = request.POST.get("leftwords2")
+		rightwords2 = request.POST.get("rightwords2")
+		cflag2 = request.POST.get("cflag2")
+		xpos2 = request.POST.get("xpos2")
+		ypos2 = request.POST.get("ypos2")	#纵向位置
+		imgfont2 = request.POST.get("imgfont2")
+		fontsize2 = int(request.POST.get("fontsize2"))
+		fontcolor2 = request.POST.get("fontcolor2")
+		text2 = request.POST.get("text2")
+		sql = "update setpic1 set leftwords1=%s,rightwords1=%s,cflag1=%s,xpos1=%s,ypos1=%s,imgfont1=%s,fontsize1=%s,fontcolor1=%s,leftwords2=%s,rightwords2=%s,cflag2=%s,xpos2=%s,ypos2=%s,imgfont2=%s,fontsize2=%s,fontcolor2=%s,text1=%s,text2=%s where picid=%s"
+		param = (leftwords1,rightwords1,cflag1,xpos1,ypos1,imgfont1,fontsize1,fontcolor1,leftwords2,rightwords2,cflag2,xpos2,ypos2,imgfont2,fontsize2,fontcolor2,text1,text2,picid)
+		with connection.cursor() as cursor:
+			cursor.execute(sql,param)
+			connection.commit()
+	return redirect('/manage/wordpos/?picid=%s&id=%s&bookname=%s&vflag=%s'%(picid,pbid,bookname,vflag))
+'''
 def mergepic1(request):
 	if request.method == 'POST':
 		pbid = request.POST.get("pbid")
@@ -388,7 +482,7 @@ def mergepic1(request):
 			cursor.execute(sql,param)
 			connection.commit()
 	return redirect('/manage/wordpos/?picid=%s&id=%s&bookname=%s'%(picid,pbid,bookname))
-
+'''
 
 
 
@@ -399,8 +493,8 @@ def mergepic2(request):
 		picid = request.POST.get("picid")
 		bookname = request.POST.get("bookname")
 		blankpic = request.POST.get("blankpic")
-		
-		cflag = 0	#request.POST.get("cflag")
+		vflag = request.POST.get("vflag")
+		cflag = request.POST.get("cflag")
 		xpos = request.POST.get("xpos")
 		ypos = int(request.POST.get("ypos"))	#纵向位置
 		letterwidth = 2	#int(request.POST.get("letterwidth"))
@@ -408,38 +502,13 @@ def mergepic2(request):
 		fontsize = int(request.POST.get("fontsize"))
 		fontcolor = request.POST.get("fontcolor")
 		scontent = request.POST.get("scontent")
-		ncontent = scontent
-		contentArr = scontent.split('\r\n')
-		firstLine = contentArr[0]
-		for i in range(1,6):
-			if len(contentArr[i].strip())>0:
-				secondLine = contentArr[i]
-				break
-		#c_flag = int(cflag)
-		x_pos = int(xpos)
-		ypos = int(ypos)
-		pos = (x_pos, ypos)
-		#----------绘制文字-----------
-		fcolorList = fontcolor.split(',')
-		fcolorList = [int(elem) for elem in fcolorList]
-		font_color = tuple(fcolorList)
-		img0 = cv2.imread(blankpic)
-		fontsize = int(fontsize)
-		imgPIL = Image.fromarray(cv2.cvtColor(img0, cv2.COLOR_BGR2RGB))
-		drawPIL = ImageDraw.Draw(imgPIL)
-		fontText = ImageFont.truetype("media/font/%s"%(imgfont), fontsize, encoding="utf-8")
-		#print(sentence)
-		drawPIL.text(pos, ncontent, font_color, font=fontText)
-		imgPutText = cv2.cvtColor(np.asarray(imgPIL), cv2.COLOR_RGB2BGR)
-		mergeImgPath = 'media/newimg/%s_%s.png'%(pbid,picid)
-		imgsrc=cv2.imwrite(mergeImgPath,imgPutText)
-		mergeImgPath = "/%s"%(mergeImgPath)
-		sql = "update setpic2 set cflag=%s,xpos=%s,ypos=%s,letterwidth=%s,imgfont=%s,fontsize=%s,fontcolor=%s,mergepic=%s,scontent=%s where picid=%s"
-		param = (cflag,xpos,ypos,letterwidth,imgfont,fontsize,fontcolor,mergeImgPath,scontent,picid)
+		
+		sql = "update setpic2 set cflag=%s,xpos=%s,ypos=%s,imgfont=%s,fontsize=%s,fontcolor=%s,scontent=%s where picid=%s"
+		param = (cflag,xpos,ypos,imgfont,fontsize,fontcolor,scontent,picid)
 		with connection.cursor() as cursor:
 			cursor.execute(sql,param)
 			connection.commit()
-	return redirect('/manage/wordpos/?picid=%s&id=%s&bookname=%s'%(picid,pbid,bookname))
+	return redirect('/manage/wordpos/?picid=%s&id=%s&bookname=%s&vflag=%s'%(picid,pbid,bookname,vflag))
 '''
 def mergepic2(request):
 	if request.method == 'POST':

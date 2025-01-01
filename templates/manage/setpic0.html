@@ -72,11 +72,59 @@
   </script>
  </head>
  <body>
-  <center>{{bookname}}</center>
+  <center>
+		{{bookname}}<br>
+		<font size='5'>
+		{% if vflag == '0' %}
+			300-dpi
+		{% else %}
+			72-dpi
+		{% endif %}
+		</font>
+  </center>
   <table width="80%" border="1" align="center">
 	<tr>
 		<td align="center">
-		<div id="originalImg"><img style="width:50%;" src="/{{picrs1.0}}" alt=""></div>
+		<div id="originalImg">
+			{% if vflag == '0' %}
+				<img style="width:50%;" src="/{{picrs1.0}}" alt=""><br>
+				300-dpi图
+			{% else %}
+				<img style="width:50%;" src="/{{picrs1.1}}" alt=""><br>
+				72-dpi图
+			{% endif %}
+		</div>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			{% if vflag == '0' %}
+				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" onmousewheel="return bigimg(this)" style="cursor:pointer">
+				  <image href="/{{picrs1.2}}" width="100%" height="100%"/>
+				  <style>
+					@font-face {
+					  font-family: 'svgfont';
+					  src: url('/media/font/{{picrs2.7}}') format('truetype');
+					}
+				  </style>
+				  <text x="{{picrs2.5}}" y="{{picrs2.6}}" font-family="svgfont"  style="font-size:{{picrs2.8}}px;fill:rgb({{picrs2.9}});" text-anchor='{% if picrs2.2 == 0 %}start{% else %}middle{% endif %}'>{{picrs2.0}}{{picrs2.10}}{{picrs2.1}}</text>
+				</svg>
+				<br>
+				300-dpi-合成图
+			{% else %}
+				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" onmousewheel="return bigimg(this)" style="cursor:pointer">
+				  <image href="/{{picrs1.3}}" width="100%" height="100%"/>
+				  <style>
+					@font-face {
+					  font-family: 'svgfont';
+					  src: url('/media/font/{{picrs2.7}}') format('truetype');
+					}
+				  </style>
+				  <text x="{{picrs2.5}}" y="{{picrs2.6}}" font-family="svgfont"  style="font-size:{{picrs2.8}}px;fill:rgb({{picrs2.9}});" text-anchor='{% if picrs2.2 == 0 %}start{% else %}middle{% endif %}'>{{picrs2.0}}{{picrs2.10}}{{picrs2.1}}</text>
+				</svg>
+				<br>
+				72-dpi-合成图
+			{% endif %}
 		</td>
 	</tr>
 	<tr>
@@ -84,14 +132,19 @@
 		<form name="myform" method="post" action="../mergepic0/" onsubmit="return onsub();">
 			左侧文字:<input type="text" name="leftwords" {% if picrs2.0 != None %}value="{{picrs2.0}}"{% endif %}><br>
 			右侧文字:<input type="text" name="rightwords" {% if picrs2.1 != None %}value="{{picrs2.1}}"{% endif %}><br>
-			<input type="radio" name="cflag" value="0" checked>整行居左&nbsp;&nbsp;
-			<input type="radio" name="cflag" value="1">整行居中<br>
+			<input type="radio" name="cflag" value="0" checked>居左&nbsp;&nbsp;
+			<input type="radio" name="cflag" value="1">居中<br>
 			<script>
 				myform.cflag[{{picrs2.2}}].checked=true;
 			</script>
-			x方向位置:<input type="text" name="xpos" placeholder="1800" {% if picrs2.3 != None %}value="{{picrs2.3}}"{% endif %}><br/>
-			y方向位置:<input type="text" name="ypos" placeholder="2115" {% if picrs2.4 != None %}value="{{picrs2.4}}"{% endif %}><br/>
-			单字母宽度:<input type="text" name="letterwidth" placeholder="42" {% if picrs2.5 != None %}value="{{picrs2.5}}"{% endif %}><br/>
+			{% if vflag == '0' %}
+				300-dpi&nbsp;x方向位置:<input type="text" name="xpos300" placeholder="200" {% if picrs2.3 != None %}value="{{picrs2.3}}"{% endif %}><br/>
+				300-dpi&nbsp;y方向位置:<input type="text" name="ypos300" placeholder="120" {% if picrs2.4 != None %}value="{{picrs2.4}}"{% endif %}><br/>
+			{% else %}
+				72-dpi&nbsp;x方向位置:<input type="text" name="xpos72" placeholder="200" {% if picrs2.5 != None %}value="{{picrs2.5}}"{% endif %}><br/>
+				72-dpi&nbsp;y方向位置:<input type="text" name="ypos72" placeholder="120" {% if picrs2.6 != None %}value="{{picrs2.6}}"{% endif %}><br/>
+			{% endif %}
+			
 			候选字体：
 			<select name="imgfont">
 				<option value="TufuliArabic-Regular.ttf">TufuliArabic-Regular.ttf</option>
@@ -100,41 +153,38 @@
 				<option value="simsunb.ttf">simsunb.ttf</option>
 				<option value="arial.ttf">arial.ttf</option>
 			</select>
-			{% if picrs2.6 != None %}
+			{% if picrs2.7 != None %}
 			<script>
 				dic_imgfont = {'TufuliArabic-Regular.ttf':0,'AdobeGurmukhi-Bold.otf':1,'AdobeGurmukhi-Regular.otf':2,'simsunb.ttf':3,'arial.ttf':4}
-				myform.imgfont.options[dic_imgfont["{{picrs2.6}}"]].selected=true;
+				myform.imgfont.options[dic_imgfont["{{picrs2.7}}"]].selected=true;
 			</script>
 			{% endif %}
 			<br/>
-			字体大小:<input type="text" name="fontsize"  placeholder="90" {% if picrs2.7 != None %}value="{{picrs2.7}}"{% endif %}><br/>
+			字体大小:<input type="text" name="fontsize"  placeholder="15" {% if picrs2.8 != None %}value="{{picrs2.8}}"{% endif %}><br/>
 			字体颜色:
 			<select name="fontcolor">
 				<option value="0,0,0">黑色</option>
 				<option value="255,255,255">白色</option>
 			</select>
-			{% if picrs2.8 != None %}
+			{% if picrs2.9 != None %}
 			<script>
 				dic_fontcolor={"0,0,0":0,"255,255,255":1}
-				myform.fontcolor.options[dic_fontcolor["{{picrs2.8}}"]].selected=true;
+				myform.fontcolor.options[dic_fontcolor["{{picrs2.9}}"]].selected=true;
 			</script>
 			{% endif %}
 			<br/>
-			用户姓名:<input type="text" name="sname"  placeholder="Lili" {% if picrs2.9 != None %}value="{{picrs2.9}}"{% endif %}><br/>
+			用户姓名:<input type="text" name="sname"  placeholder="Lili" {% if picrs2.10 != None %}value="{{picrs2.10}}"{% endif %}><br/>
 			<input type="hidden" name="pbid" value="{{pbid}}">
 			<input type="hidden" name="picid" value="{{picid}}">
 			<input type="hidden" name="bookname" value="{{bookname}}">
 			<input type="hidden" name="blankpic" value="{{picrs1.1}}">
+			<input type="hidden" name="vflag" value="{{vflag}}">
 			{% csrf_token %}
 			<input type="submit" value="提交">
 		</form>
 		</td>
 	</tr>
-	<tr>
-		<td align="center">
-			<img src="{{picrs2.10}}" width="50%" height="50%" onmousewheel="return bigimg(this)" style="cursor:pointer">
-		</td>
-	</tr>
+	
   </table>
 	
  </body>
